@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <title>imcaoxuan</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <link rel="stylesheet" title="default" href="/static/sdk/sdk.css"/>
+    <link rel="stylesheet" href="/static/sdk/helper.css"/>
+    <script src="/static/sdk/sdk.js"></script>
+    <script src="/static/js/vue@2.js"></script>
+    <script src="/static/js/history.js"></script>
+    <script src="/static/js/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/jquery.cookie.min.js"></script>
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="root" class="app-wrapper"></div>
+<script>
+
+
+    (function () {
+
+        // window.enableAMISDebug = true
+        let amis = amisRequire('amis/embed');
+
+        const app = {
+            "type": "page",
+            "name": "main",
+            "id": "main",
+            "data": {},
+            "css": {
+                ".main-body": {
+                    "overflow-y": "scroll"
+                },
+                "::-webkit-scrollbar": {
+                    "display": "none"
+                },
+                ".cxd-Card .cxd-Card--link": {
+                    "border": "none"
+                }
+            },
+            "onEvent": {},
+            "body": [
+                {
+                    "type": "tabs",
+                    "mode": "vertical",
+                    "tabs": [
+                        {
+                            "title": "maven",
+                            "hash": "tab-maven",
+                            "body": [
+                                {
+                                    "type": "markdown",
+                                    "src": "/static/md/maven.md"
+                                }
+                            ]
+                        },
+                        {
+                            "title": "pypi",
+                            "hash": "tab-pypi",
+                            "body": [
+                                {
+                                    "type": "markdown",
+                                    "src": "/static/md/pypi.md"
+                                }
+                            ]
+                        },
+                        {
+                            "title": "conda",
+                            "hash": "tab-conda",
+                            "body": [
+                                {
+                                    "type": "markdown",
+                                    "src": "/static/md/conda.md"
+                                }
+                            ]
+                        },
+                        {
+                            "title": "apt",
+                            "hash": "tab-apt",
+                            "body": [
+                                {
+                                    "type": "markdown",
+                                    "src": "/static/md/apt.md"
+                                }
+                            ]
+                        }
+                        /*{
+                            "title": "选项卡2",
+                            "hash": "tab2",
+                            "body": {
+                                "type": "form",
+                                "panelClassName": "panel-primary",
+                                "body": [
+                                    {
+                                        "type": "input-text",
+                                        "name": "a",
+                                        "label": "文本"
+                                    }
+                                ]
+                            }
+                        },*/
+                        /*{
+                            "title": "选项卡3",
+                            "body": {
+                                "type": "crud",
+                                "api": "/amis/api/sample",
+                                "filter": {
+                                    "title": "条件搜索",
+                                    "submitText": "",
+                                    "body": [
+                                        {
+                                            "type": "input-text",
+                                            "name": "keywords",
+                                            "placeholder": "通过关键字搜索",
+                                            "clearable": true,
+                                            "addOn": {
+                                                "label": "搜索",
+                                                "type": "submit"
+                                            }
+                                        },
+                                        {
+                                            "type": "plain",
+                                            "text": "这里的表单项可以配置多个"
+                                        }
+                                    ]
+                                },
+                                "columns": [
+                                    {
+                                        "name": "id",
+                                        "label": "ID",
+                                        "width": 20
+                                    },
+                                    {
+                                        "name": "engine",
+                                        "label": "Rendering engine"
+                                    },
+                                    {
+                                        "name": "browser",
+                                        "label": "Browser"
+                                    },
+                                    {
+                                        "name": "platform",
+                                        "label": "Platform(s)"
+                                    },
+                                    {
+                                        "name": "version",
+                                        "label": "Engine version"
+                                    },
+                                    {
+                                        "name": "grade",
+                                        "label": "CSS grade"
+                                    },
+                                    {
+                                        "type": "operation",
+                                        "label": "操作",
+                                        "width": 100,
+                                        "buttons": []
+                                    }
+                                ]
+                            }
+                        }*/
+                    ]
+                }
+            ]
+        };
+
+        var host = window.location.host
+        var wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:"
+        let amisInstance = amis.embed(
+            '#root',
+            app,
+            {
+                location: history.location
+            },
+
+
+            {
+                requestAdaptor(api) {
+                    try {
+                    } catch (e) {
+                        console.log('request error')
+                        console.log(e)
+                    }
+                    return {
+                        ...api,
+                        headers: {
+                            ...api.headers
+                        }
+                    }
+                },
+                responseAdaptor(api, payload, query, request, response) {
+                    try {
+                        if (!api.url.startsWith('/api')) {
+                            return payload
+                        }
+                    } catch (e) {
+                        console.log(e)
+                        return payload
+                    }
+                    console.log("payload", payload)
+                    var code = payload.code
+                    var intCode = parseInt(parseInt(code.substring(0, 1), 16) + code.substring(1))
+                    console.log('intCode', intCode)
+                    var status = payload.successful && intCode === 0 ? 0 : intCode
+                    if (status === 0) {
+                        payload.msg = ''
+                    }
+                    console.log(payload)
+                    return {
+                        ...payload,
+                        status: status
+                    }
+                },
+                replaceText: {
+                    WS_PROTOCOL: wsProtocol,
+                    HOST: host,
+                },
+                /*responseAdaptor(payload, response, api) {
+                    return {
+                        ...response,
+                        status: response.successful && response.code == '00000' ? 0 : -1
+                    };
+                },*/
+                // watchRouteChange: fn => {
+                //   return history.listen(fn);
+                // },
+                theme: 'cxd'
+            }
+        );
+
+    })();
+</script>
+</body>
+</html>
